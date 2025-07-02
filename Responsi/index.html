@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WebGIS Rumahku</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+
+  <!-- Leaflet Sidebar CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-sidebar@0.6.0/dist/leaflet-sidebar.min.css"/>
+
+  <!-- Fullscreen Plugin -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-fullscreen@2.0.0/leaflet.fullscreen.min.css"/>
+
+  <!-- EasyButton -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles.css"/>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    h1 {
+      text-align: center;
+      margin: 10px 0;
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px;
+    }
+    #map {
+      height: 90vh;
+      width: 100%;
+    }
+    #sidebar {
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>WebGIS Lokasi Rumah Saya</h1>
+
+  <div id="map"></div>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="leaflet-sidebar collapsed">
+    <div class="leaflet-sidebar-content">
+      <h2>Informasi</h2>
+      <p>Ini adalah tampilan peta lokasi rumah saya dalam bentuk WebGIS interaktif.</p>
+      <p>Data diambil dari file GeoJSON lokal yang dibuat dari SHP.</p>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+  <!-- Sidebar JS -->
+  <script src="https://unpkg.com/leaflet-sidebar@0.6.0/dist/leaflet-sidebar.min.js"></script>
+
+  <!-- Fullscreen Plugin -->
+  <script src="https://unpkg.com/leaflet-fullscreen@2.0.0/leaflet.fullscreen.min.js"></script>
+
+  <!-- EasyButton -->
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+
+  <script>
+    // Inisialisasi peta (koordinat Palangka Raya sebagai contoh)
+    const map = L.map('map').setView([-2.2096, 113.9213], 16);
+
+    // Tambahkan tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Sidebar
+    var sidebar = L.sidebar({ container: 'sidebar' }).addTo(map);
+
+    // Tombol toggle sidebar
+    L.easyButton('fa-bars', function () {
+      sidebar.toggle();
+    }).addTo(map);
+
+    // Fullscreen control
+    map.addControl(new L.Control.Fullscreen());
+
+    // Muat GeoJSON lokal (pastikan file ini ada di folder yang sama)
+    fetch('rumahku2.geojson')
+      .then(response => response.json())
+      .then(data => {
+        L.geoJSON(data, {
+          style: {
+            color: "#ff7800",
+            weight: 2,
+            opacity: 0.65
+          },
+          onEachFeature: function (feature, layer) {
+            const name = feature.properties.name || 'Tidak diketahui';
+            const desc = feature.properties.description || 'Tidak ada deskripsi';
+            layer.bindPopup(`<b>${name}</b><br>${desc}`);
+          }
+        }).addTo(map);
+      })
+      .catch(error => {
+        console.error('Gagal memuat GeoJSON:', error);
+        alert('Gagal memuat data rumahku2.geojson. Pastikan file tersedia dan format valid.');
+      });
+  </script>
+</body>
+</html>
